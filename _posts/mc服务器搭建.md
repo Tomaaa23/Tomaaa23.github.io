@@ -1,0 +1,247 @@
+### mc服务器搭建
+
+#### 事前准备
+
+首先需要一台机子来跑服务端，可以在自己电脑本地跑但不推荐，因为自己电脑没有公网ip，还需要内网穿透将内网映射到公网，也达不到游戏24小时一直运行的效果(你把自己电脑一直开着当我没说)。
+
+我这里用的是华为云的云耀云服务器，系统内核是linux。
+
+#### 安装运行环境jdk
+
+首先更新软件包列表，运行以下命令：
+
+```text
+sudo apt update
+```
+
+然后使用apt安装jdk：
+
+```text
+sudo apt install openjdk-17-jdk
+```
+
+这里的17是jdk版本，可以自行修改。如果java命令可以被成功识别则安装成功。如下图效果。
+
+![image-20230912203357248](C:\Users\Tomaaa\AppData\Roaming\Typora\typora-user-images\image-20230912203357248.png)
+
+#### 部署mc服务端
+
+首先下载服务端，我这里用mc官网提供的原版1.20.1[下载地址跳转](https://www.minecraft.net/zh-hans/download/server)
+
+如果和我一样是在本地下载的则还需要将其上传至服务器。可以使用scp命令上传，当然前提是自己电脑能连上自己的服务器，可以使用ping测试一下，因为买的服务器出于安全考虑可能刚开始默认关闭了所有端口，可能需要你在控制台手动开启。关于scp命令具体参数用法建议自行谷歌，我这里只给出基本传输命令：
+
+```text
+scp local_file remote_username@remote_ip:remote_folder
+```
+
+local_file指本地文件，remote_username是远程主机用户名，remote_ip是服务器公网ip地址，remote_folder则是指服务器目录。比如我将自己在E:\mc\server下的server.jar传输到服务器的/home/mc目录下，则：
+
+```text
+scp E:\mc\server\server.jar root@xxx.xx.x.xxx:/home/mc
+```
+
+当然你也可以下载winscp[下载地址跳转](https://winscp.net/eng/download.php)，有比较友好的可视化界面，主机名是服务器ip地址，用户名为密码是买服务器时自己设的。
+
+![image-20230912205747701](C:\Users\Tomaaa\AppData\Roaming\Typora\typora-user-images\image-20230912205747701.png)
+
+接下来在服务端同级目录下创建运行脚本，(主要是不用每次开启都去运行较为冗长的开服命令)。
+
+```text
+touch run.sh		//创建运行脚本
+chmod +x run.sh		//设置脚本运行权限
+vim  run.sh			//使用vim编辑
+```
+
+脚本内容如下：
+
+```text
+sudo java -Xms1024M -Xmx2048M -jar server.jar nogui
+```
+
+Xms后面是指最小内存，Xmx后面是指最大内存，可以根据自己服务器配置自行调整，nogui是指没有图形界面，节省内存。
+
+首席运行mc服务器，直接运行刚才写的脚本就好：
+
+```text
+./run.sh
+```
+
+它会提示你需要同意一个协议：
+
+![image-20230912211524673](C:\Users\Tomaaa\AppData\Roaming\Typora\typora-user-images\image-20230912211524673.png)
+
+这个时候你会发现该目录下多出了一些文件，修改其中eula.txt中的false为true；
+
+![image-20230912211840402](C:\Users\Tomaaa\AppData\Roaming\Typora\typora-user-images\image-20230912211840402.png)
+
+![image-20230912211756850](C:\Users\Tomaaa\AppData\Roaming\Typora\typora-user-images\image-20230912211756850.png)
+
+再次运行脚本，Done则开服完成。
+
+![image-20230912212029729](C:\Users\Tomaaa\AppData\Roaming\Typora\typora-user-images\image-20230912212029729.png)
+
+服务器地址为 服务器公网ip:端口号；默认端口号为25565。
+
+#### 服务端配置文件
+
+同级目录下的server.properties为服务端配置文件，在这里可以改一些配置；
+
+spawn-protection=16 	
+
+#出生点保护半径(若没有op则不生效)
+
+query.port=25565			
+
+#设置监听服务器的端口号
+
+force-gamemode=false	
+
+#玩家加入服务器时强制变成默认游戏模式
+
+allow-nether=true			
+
+#是否开启地狱世界(关闭后删除将不会生成地狱世界)
+
+gamemode=survival		
+
+#设置玩家的游戏模式
+
+enable-query=false		
+
+#是否开启GameSpy4协议服务器监听器，用于获取服务器信息，建议不要修改
+
+difficulty=easy                
+
+#设置游戏的难度（peaceful(0)=和平，easy(1)=简单，normal(2)=普通，hard(3)=困难）
+
+spawn-monsters=true
+
+#是否生成怪物
+
+op-permission-level=4
+
+#设定OP的权限等级
+
+#1 - OP可以无视重生点保护
+
+#2 - OP可以使用 /clear、/gamemode、/tp 等等命令，可编辑命令方块
+
+#3 - OP可以使用 /ban、/deop、/kick 以及 /op 命令 
+
+#4 - OP可以使用 /stop 命令
+
+pvp=true
+
+#是否可以打架
+
+level-type=default
+
+#确定地图所生成的类型 
+
+#DEFAULT - 标准世界
+
+#FLAT - 超平坦世界
+
+#LARGEBIOMES - 预设世界，但所有生态系都更大（仅快照12w19a，或正式版1.3之后可用）
+
+#AMPLIFIED - 预设世界，但世界生成高度提高（仅快照13w36a，或正式版1.7.2之后可用）
+
+#CUSTOMIZED - 自快照14w21b以来，服务器也支持自定义地形。使用方法是在generator-settings贴上代码`
+
+hardcore=false
+
+#极限模式（启用后，玩家死后会被服务器封禁）。
+
+enable-command-block=false
+
+#是否启用命令方块
+
+max-players=20
+
+#最大玩家数
+
+#在ops.ym中设置你要突破人数限制的OP下的bypassesPlayerLimit选项为true即可（默认值为false）
+
+#这意味着OP不需要在服务器人满时等待玩家离开再加入，
+
+max-world-size=29999984
+
+#设置世界边界的最大半径值，单位为方块。通过成功执行的命令能把世界边界设置得更大，
+
+rcon.port=25575
+
+#设置远程访问的端口号
+
+server-port=25565
+
+#设置服务器的IPv4端口号
+
+server-ip=
+
+#将服务器与一个特定IP绑定。建议留空
+
+#留空，或是填入你想让服务器绑定的域名。
+
+spawn-npcs=true
+
+#决定是否生成村民
+
+allow-flight=false
+
+#允许玩家在安装添加飞行功能的mod前提下在生存模式下飞行。
+
+level-name=world
+
+#主世界名称
+
+view-distance=10
+
+#设置服务端传送给客户端的区块量 (范围3-15) 
+
+#减小此数值可有效缓解卡顿
+
+resource-pack=
+
+#可输入指向一个资源包的URI。玩家可选择是否使用该资源包
+
+spawn-animals=true
+
+#动物是否可以生成
+
+white-list=false
+
+#服务器的白名单，OP无须加入白名单
+
+rcon.password=
+
+#远程访问密码
+
+generate-structures=true
+
+#定义是否在生成世界时生成结构（如村庄）
+
+online-mode=true
+
+#线上模式是否开启 (即正版模式)
+
+max-build-height=256
+
+#玩家在游戏中能够建造的最大高度
+
+level-seed=
+
+#世界种子
+
+prevent-proxy-connections=false
+
+#如果开启服务器发送的和Mojang的验证服务器的ISP/AS不一样将会被踢出
+
+#开启后禁止使用VPN(虚拟专用网络或代理)
+
+use-native-transport=true
+
+#是否使用针对Linux平台的数据包收发优化，此选项仅会在Linux平台下生成
+
+enable-rcon=false
+
+#是否允许远程访问服务器控制台。
