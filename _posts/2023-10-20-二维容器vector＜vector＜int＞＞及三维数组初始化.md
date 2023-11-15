@@ -1,3 +1,8 @@
+---
+layout: article
+title: 二维容器vector的初始化
+---
+
 ### 二维容器vector的初始化
 
 直接看一下二维容器初始化代码：
